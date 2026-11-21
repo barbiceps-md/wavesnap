@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="tr" data-tema="storm" class="hazirlaniyor">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WaveSnap</title>
+<link rel="icon" href="simge.ico">
+<script>try { document.documentElement.dataset.tema = localStorage.getItem("ws-tema") || "storm"; } catch (e) {}</script>
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="sayfalar.css">
+<link rel="stylesheet" href="uyum.css">
+<style>.hazirlaniyor body { visibility: hidden; }</style>
+</head>
+<body>
+<div class="uygulama">
+  <aside class="yan">
+    <a class="logo" href="#genel" aria-label="WaveSnap">
+      <svg class="sembol" viewBox="0 0 48 48" aria-hidden="true"><use href="#sembol"/></svg>
+      <span class="yazi-logo">WaveSnap</span>
+    </a>
+    <nav class="menu" id="menu">
+      <a href="#genel" data-sayfa="genel"><svg><use href="#i-genel"/></svg>Genel bakış</a>
+      <a href="#cihazlar" data-sayfa="cihazlar"><svg><use href="#i-cihaz"/></svg>Cihazlar<span class="rozet" id="rozetCihaz"></span></a>
+      <a href="#gecmis" data-sayfa="gecmis"><svg><use href="#i-gecmis"/></svg>Geçmiş</a>
+      <a href="#zamanlama" data-sayfa="zamanlama" data-yetenek="durdur wifi_zaman led"><svg><use href="#i-saat"/></svg>Zamanlama</a>
+      <a href="#misafir" data-sayfa="misafir" data-yetenek="misafir"><svg><use href="#i-misafir"/></svg>Misafir ağı</a>
+      <a href="#araclar" data-sayfa="araclar"><svg><use href="#i-arac"/></svg>Araçlar</a>
+    </nav>
+    <div class="yan-alt">
+      <a href="#ayarlar" data-sayfa="ayarlar" class="menu-tek"><svg><use href="#i-ayar"/></svg>Ayarlar</a>
+      <div class="modem-kart">
+        <div class="modem-ad" id="modemAd">Modem</div>
+        <div class="modem-durum" id="durum"><span class="isik"></span><span id="durumYazi">Bağlanıyor…</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="icerik">
+    <header class="ust">
+      <div>
+        <h1 id="sayfaBaslik">Genel bakış</h1>
+        <p class="alt-baslik" id="sayfaAlt"></p>
+      </div>
+      <label class="arama" id="aramaKutu">
+        <svg><use href="#i-ara"/></svg>
+        <input id="arama" placeholder="Cihaz, IP ya da MAC ara" spellcheck="false" autocomplete="off">
+      </label>
+    </header>
+
+    <div class="serit" id="serit" hidden><span id="seritYazi"></span><span class="serit-dugmeler" id="seritDugmeler"></span></div>
+    <p class="yukleme" id="yukleme"><span class="donen"></span>Modemden veriler okunuyor…</p>
+
+    <!-- GENEL BAKIŞ -->
+    <section class="sayfa" data-sayfa="genel" hidden>
+      <div class="ozet-satir">
+        <article class="kutu ozet-kutu vurgulu">
+          <div class="kutu-ust"><span class="kutu-ad" id="oBagliBaslik">Bağlı cihaz</span><svg class="kutu-simge"><use href="#i-cihaz"/></svg></div>
+          <div class="buyuk" id="oBagli">0</div>
+          <div class="dagilim" id="oDagilim"></div>
+          <div class="dagilim-yazi" id="oDagilimYazi"></div>
+        </article>
+        <article class="kutu ozet-kutu sayac-gerek">
+          <div class="kutu-ust"><span class="kutu-ad">Şu anki trafik</span><svg class="kutu-simge"><use href="#i-dalga"/></svg></div>
+          <div class="cift">
+            <div><span class="ok">↓</span><span class="buyuk" id="oIndir">0</span><span class="birim" id="oIndirB">Mbps</span></div>
+            <div class="sonuk"><span class="ok">↑</span><span class="orta" id="oYukle">0</span><span class="birim" id="oYukleB">Mbps</span></div>
+          </div>
+          <div class="kutu-not" id="oEnCok"></div>
+        </article>
+        <article class="kutu ozet-kutu">
+          <div class="kutu-ust"><span class="kutu-ad">İnternet hattı</span><svg class="kutu-simge"><use href="#i-hat"/></svg></div>
+          <div class="buyuk kucuk-buyuk" id="oHat">—</div>
+          <div class="kutu-not" id="oHatAlt"></div>
+          <div class="kutu-not" id="oHatSure"></div>
+        </article>
+        <article class="kutu ozet-kutu">
+          <div class="kutu-ust"><span class="kutu-ad" id="oAglarBaslik">Wi-Fi ağları</span><svg class="kutu-simge"><use href="#i-wifi"/></svg></div>
+          <div class="aglar" id="oAglar"></div>
+        </article>
+      </div>
+
+      <div class="iki-kolon sayac-gerek">
+        <article class="kutu grafik-kutu">
+          <div class="kutu-ust">
+            <div><span class="kutu-ad">Ağ trafiği</span><span class="kutu-acik">son 30 dakika, tüm cihazlar</span></div>
+            <div class="lejant"><span class="l-indir">İndirme</span><span class="l-yukle">Yükleme</span></div>
+          </div>
+          <div class="grafik" id="grafik"></div>
+        </article>
+        <article class="kutu">
+          <div class="kutu-ust"><span class="kutu-ad">En çok kullananlar</span><span class="kutu-acik">şu an</span></div>
+          <div class="enler" id="enler"></div>
+        </article>
+      </div>
+
+      <article class="kutu tablo-kutu">
+        <div class="kutu-ust">
+          <div><span class="kutu-ad">Bağlı cihazlar</span><span class="kutu-acik">sıralamak için soldaki tutamaçtan sürükleyin</span></div>
+          <a class="baglanti" href="#cihazlar">Tümünü gör</a>
+        </div>
+        <div class="tablo" id="tabloGenel"></div>
+      </article>
+    </section>
+
+    <!-- CİHAZLAR -->
+    <section class="sayfa" data-sayfa="cihazlar" hidden>
+      <div class="cihaz-ust">
+      <div class="filtreler" id="filtreler">
+        <button data-f="bagli" class="secili">Bağlı <span></span></button>
+        <button data-f="tumu">Tümü <span></span></button>
+        <button data-f="eski">Daha önce bağlananlar <span></span></button>
+        <button data-f="engelli" data-yetenek="engelle">Engelliler <span></span></button>
+      </div>
+      <button class="dugme" id="topluEngel" data-yetenek="engelle">Tanınmayanları engelle…</button>
+      </div>
+      <div class="grup-filtre" id="grupFiltre" hidden></div>
+      <article class="kutu tablo-kutu">
+        <div class="tablo" id="tabloCihaz"></div>
+      </article>
+    </section>
+
+    <!-- GEÇMİŞ -->
+    <section class="sayfa" data-sayfa="gecmis" hidden>
+      <div class="arac-cubugu">
+        <div class="filtreler" id="donem">
+          <button data-gun="1">Son 24 saat</button><button data-gun="7" class="secili">7 gün</button>
+          <button data-gun="30">30 gün</button><button data-gun="365">1 yıl</button>
+        </div>
+        <div class="sag-dugmeler">
+          <a class="dugme" href="/api/disa-aktar?tur=cihazlar" download>Cihaz listesi (CSV)</a>
+          <a class="dugme sayac-gerek" id="kullanimCsv" href="/api/disa-aktar?tur=kullanim&gun=30" download>Kullanım (CSV)</a>
+        </div>
+      </div>
+      <div class="ozet-satir uc">
+        <article class="kutu ozet-kutu sayac-gerek"><div class="kutu-ust"><span class="kutu-ad">Toplam kullanım</span></div>
+          <div><span class="buyuk" id="gToplam">—</span></div><div class="kutu-not" id="gToplamAlt"></div></article>
+        <article class="kutu ozet-kutu"><div class="kutu-ust"><span class="kutu-ad">İnternet kesintileri</span></div>
+          <div><span class="buyuk" id="gKesinti">—</span></div><div class="kutu-not" id="gKesintiAlt"></div></article>
+        <article class="kutu ozet-kutu"><div class="kutu-ust"><span class="kutu-ad">Son hız testi</span></div>
+          <div><span class="buyuk" id="gHiz">—</span><span class="birim">Mbps</span></div><div class="kutu-not" id="gHizAlt"></div></article>
+      </div>
+      <div class="iki-kolon sayac-gerek">
+        <article class="kutu"><div class="kutu-ust"><div><span class="kutu-ad">Kullanım</span><span class="kutu-acik" id="gGrafikAlt"></span></div>
+          <div class="lejant"><span class="l-indir">İndirme</span><span class="l-yukle">Yükleme</span></div></div>
+          <div class="grafik" id="gGrafik"></div></article>
+        <article class="kutu"><div class="kutu-ust"><span class="kutu-ad">Kim ne kadar kullandı</span></div><div class="enler" id="gEnler"></div></article>
+      </div>
+      <div class="iki-kolon esit">
+        <article class="kutu"><div class="kutu-ust"><span class="kutu-ad">Zaman çizelgesi</span><span class="kutu-acik">cihazlar ne zaman geldi, ne zaman gitti</span></div><div class="olaylar" id="gOlaylar"></div></article>
+        <article class="kutu"><div class="kutu-ust"><span class="kutu-ad">Kesinti kaydı</span><span class="kutu-acik">bu bilgisayardan her 15 sn'de bir ölçülür</span></div><div class="olaylar" id="gKesintiler"></div></article>
+      </div>
+    </section>
+
+    <!-- ZAMANLAMA -->
+    <section class="sayfa" data-sayfa="zamanlama" hidden>
+      <article class="kutu" id="zEbeveyn"></article>
+      <article class="kutu" id="zWifi"></article>
+      <article class="kutu" id="zLed"></article>
+    </section>
+
+    <!-- MİSAFİR AĞI -->
+    <section class="sayfa" data-sayfa="misafir" hidden>
+      <div class="iki-kolon">
+        <article class="kutu" id="mAyar"></article>
+        <article class="kutu qr-kutu" id="mQr"></article>
+      </div>
+    </section>
+
+    <!-- ARAÇLAR -->
+    <section class="sayfa" data-sayfa="araclar" hidden>
+      <div class="iki-kolon">
+        <article class="kutu" id="aHiz"></article>
+        <article class="kutu" id="aHat" data-yetenek="hat"></article>
+      </div>
+      <div class="iki-kolon">
+        <article class="kutu" id="aKayit" data-yetenek="kayitlar"></article>
+        <div class="dikey">
+          <article class="kutu" id="aTest"></article>
+          <article class="kutu" id="aBaslat" data-yetenek="yeniden_baslat"></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- AYARLAR -->
+    <section class="sayfa" data-sayfa="ayarlar" hidden>
+      <article class="kutu">
+        <div class="kutu-ust"><span class="kutu-ad">Tema</span></div>
+        <div class="temalar" id="temalar">
+          <button data-tema="storm"><span class="ornek"><i style="background:#1C1D20"></i><i style="background:#5A6068"></i><i style="background:#E6FF3A"></i></span><span class="tik">✓</span><b>Storm Grey</b><small>Koyu gri, limon vurgu</small></button>
+          <button data-tema="desert"><span class="ornek"><i style="background:#D8C3A0"></i><i style="background:#5B5E3C"></i><i style="background:#FFD21F"></i></span><span class="tik">✓</span><b>Desert Sand</b><small>Açık kum, zeytin, sarı</small></button>
+          <button data-tema="electric"><span class="ornek"><i style="background:#090A10"></i><i style="background:#2F6BFF"></i><i style="background:#D6FF3D"></i></span><span class="tik">✓</span><b>Electric Blue</b><small>Gece mavisi, elektrik mavisi</small></button>
+        </div>
+      </article>
+      <article class="kutu">
+        <div class="kutu-ust"><span class="kutu-ad">Dil</span></div>
+        <p class="kutu-aciklama">Arayüz dili. Değiştirince sayfa yenilenir.</p>
+        <div class="diller" id="dilSecim"></div>
+      </article>
+      <article class="kutu">
+        <div class="kutu-ust"><span class="kutu-ad">Bildirimler</span></div>
+        <div class="ayar-satir"><div>Yeni cihaz bildirimi<small>İlk kez bağlanan bir cihaz olunca Windows bildirimi gelir. Pencere kapalıyken de dakikada bir bakılır.</small></div><button class="anahtar" id="bildirimAnahtar" aria-label="Yeni cihaz bildirimi"></button></div>
+      </article>
+      <article class="kutu">
+        <div class="kutu-ust"><span class="kutu-ad">Modem</span></div>
+        <div class="ayar-satir" id="birakSatir"><div>Modemi 10 dakika bırak<small>Modemin kendi sayfasına girmek için. Modem aynı anda tek oturum kabul ediyor.</small></div><button class="dugme" id="birak">Bırak</button></div>
+        <div class="ayar-satir"><div>Modem bağlantısı<small id="baglantiOzet">Modem türü, adresi ya da şifresi değişirse.</small></div><button class="dugme" id="sifreAc">Değiştir</button></div>
+        <div class="ayar-satir"><div>WaveSnap'i tamamen kapat<small>Arka planda çalışmayı da durdurur; bildirim gelmez. Simgeyle yeniden açılır.</small></div><button class="dugme tehlike" id="kapat">Kapat</button></div>
+      </article>
+    </section>
+
+    <!-- KURULUM -->
+    <section class="kurulum" id="kurulum" hidden>
+      <div class="kutu kurulum-kart">
+        <h2>Modeme bağlanalım</h2>
+        <p class="kurulum-kesif" id="kKesif"><span class="donen"></span>Modem aranıyor…</p>
+        <p class="hata" id="kurulumHata" hidden></p>
+        <form id="kurulumForm" autocomplete="off">
+          <label>Modem türü<select id="kSurucu"></select></label>
+          <label>Modem adresi<input id="kAdres" class="mono" spellcheck="false" placeholder="192.168.1.1"></label>
+          <div id="kGiris">
+            <p class="kucuk">WaveSnap, modemin yönetim şifresiyle giriş yapar. Şifre bu bilgisayarda şifreli saklanır; başka hiçbir yere gönderilmez.</p>
+            <label>Kullanıcı adı<input id="kKullanici" value="admin" spellcheck="false"></label>
+            <label>Şifre<input id="kSifre" type="password"></label>
+          </div>
+          <p class="kucuk" id="kTemelNot" hidden>Temel mod modem şifresi istemez. İnternet kesintileri, hız testi ve bağlantı testi tam çalışır. Cihaz listesi ağı tarayarak bulunur: uykudaki telefonlar görünmeyebilir. Engelleme, durdurma ve hız sınırı bu modda yoktur.</p>
+          <button class="dugme ana" type="submit" id="kDugme">Kaydet ve bağlan</button>
+          <button class="dugme hafif" type="button" id="kVazgec" hidden>Vazgeç</button>
+        </form>
+        <p class="kucuk" id="kKilitNot">Modem 5 hatalı denemede kendini 10 dakika kilitler.</p>
+      </div>
+    </section>
+  </main>
+</div>
+
+<aside class="cekmece" id="cekmece" hidden></aside>
+<div class="perde" id="perde" hidden><div class="pencere" id="pencere" role="dialog" aria-modal="true"></div></div>
+<div class="bildirim" id="bildirim" hidden></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- WaveSnap sembolü (B · dalgalı W): adın baş harfi tek bir dalga çizgisiyle -->
+    <symbol id="sembol" viewBox="0 0 48 48">
+      <rect x="1" y="1" width="46" height="46" rx="14" fill="var(--vurgu)"/>
+      <path d="M9.5 15.5c2.6 13 5.6 17.5 8.3 9.3 2.2-6.6 4-9.8 6.2-9.8s4 3.2 6.2 9.8c2.7 8.2 5.7 3.7 8.3-9.3" fill="none" stroke="var(--vurgu-ust)" stroke-width="4.4" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="i-genel" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="8" rx="2"/><rect x="13.5" y="3.5" width="7" height="5" rx="2"/><rect x="13.5" y="11.5" width="7" height="9" rx="2"/><rect x="3.5" y="14.5" width="7" height="6" rx="2"/></symbol>
+    <symbol id="i-cihaz" viewBox="0 0 24 24"><rect x="3" y="4.5" width="13" height="10" rx="2"/><path d="M6 18.5h7"/><rect x="17" y="8.5" width="4.5" height="11" rx="1.4"/></symbol>
+    <symbol id="i-gecmis" viewBox="0 0 24 24"><path d="M4 19.5V5"/><path d="M4 19.5h16"/><path d="M7.5 15l3.5-4 3 2.5 5-6"/></symbol>
+    <symbol id="i-saat" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+    <symbol id="i-misafir" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.6-3.4 2.8-5 5.5-5s4.9 1.6 5.5 5"/><path d="M16 6.2a3 3 0 0 1 0 5.6"/><path d="M17.5 14.3c1.7.6 2.7 2.1 3 4.7"/></symbol>
+    <symbol id="i-arac" viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.2 5.2L4 17l3 3 5.5-5.5a4 4 0 0 0 5.2-5.2l-2.4 2.4-2.6-.4-.4-2.6z"/></symbol>
+    <symbol id="i-ayar" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2.2"/><circle cx="10" cy="17" r="2.2"/></symbol>
+    <symbol id="i-ara" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></symbol>
+    <symbol id="i-dalga" viewBox="0 0 24 24"><path d="M3 12c2-5 4-5 6 0s4 5 6 0 4-5 6 0"/></symbol>
+    <symbol id="i-hat" viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M7 8l5-5 5 5"/><path d="M7 16l5 5 5-5"/></symbol>
+    <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M3 9.5a13 13 0 0 1 18 0"/><path d="M6.2 13a8.4 8.4 0 0 1 11.6 0"/><path d="M9.4 16.4a3.8 3.8 0 0 1 5.2 0"/><circle cx="12" cy="19.6" r=".8"/></symbol>
+    <symbol id="i-tutamac" viewBox="0 0 24 24"><circle cx="9" cy="6.5" r="1.2"/><circle cx="15" cy="6.5" r="1.2"/><circle cx="9" cy="12" r="1.2"/><circle cx="15" cy="12" r="1.2"/><circle cx="9" cy="17.5" r="1.2"/><circle cx="15" cy="17.5" r="1.2"/></symbol>
+    <symbol id="i-telefon" viewBox="0 0 24 24"><rect x="7" y="3" width="10" height="18" rx="2.4"/><path d="M11 17.5h2"/></symbol>
+    <symbol id="i-bilgisayar" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="11" rx="1.8"/><path d="M2 19h20"/></symbol>
+    <symbol id="i-tv" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="1.8"/><path d="M9 20h6"/></symbol>
+    <symbol id="i-kutu" viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="10" rx="2"/><path d="M8 12h.01M12 12h.01"/></symbol>
+    <symbol id="i-tablet" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2.2"/><path d="M11 17.5h2"/></symbol>
+    <symbol id="i-yazici" viewBox="0 0 24 24"><path d="M7 9V4h10v5"/><rect x="3.5" y="9" width="17" height="8" rx="2"/><path d="M7 14h10v6H7z"/></symbol>
+    <symbol id="i-kamera" viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="10" rx="2"/><path d="M16 11l5-3v8l-5-3"/></symbol>
+    <symbol id="i-oyun" viewBox="0 0 24 24"><path d="M7 8h10a4 4 0 0 1 4 4.5l-.6 3.4a2.4 2.4 0 0 1-4.1 1.2L14.5 15h-5l-1.8 2.1a2.4 2.4 0 0 1-4.1-1.2L3 12.5A4 4 0 0 1 7 8z"/><path d="M8 11v3M6.5 12.5h3"/></symbol>
+    <symbol id="i-akilli" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z"/></symbol>
+    <symbol id="i-ag" viewBox="0 0 24 24"><rect x="3" y="13" width="18" height="6" rx="2"/><path d="M7 16h.01M10 16h.01"/><path d="M8 9.5a6 6 0 0 1 8 0M10.4 11.6a2.6 2.6 0 0 1 3.2 0"/></symbol>
+    <symbol id="i-diger" viewBox="0 0 24 24"><rect x="4" y="7" width="16" height="10" rx="2"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></symbol>
+    <symbol id="i-kapat" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  </defs>
+</svg>
+<script src="lib/qrcode.js"></script>
+<script src="ceviri.js"></script>
+<script src="app.js"></script>
+<script src="sayfalar.js"></script>
+</body>
+</html>

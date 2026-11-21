@@ -1,0 +1,4 @@
+requests>=2.31
+cryptography>=42
+pywin32>=306; sys_platform == "win32"
+keyring>=25; sys_platform != "win32"
