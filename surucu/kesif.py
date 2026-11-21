@@ -1,4 +1,5 @@
 """İlk kurulumda modemi bulur ve tanır (şifre kullanmadan)."""
+import concurrent.futures as cf
 import re
 import sys
 
@@ -20,7 +21,9 @@ def ag_gecidi() -> str:
 def tani(host: str = "") -> dict:
     host = host or ag_gecidi() or "192.168.1.1"
     u = upnp_bul(host) or {}
-    eslesen = next((s for s in TAM if s.tani(host)), None)
+    with cf.ThreadPoolExecutor(len(TAM)) as havuz:  # sürücüler aynı anda sorar; sıradaki ilk eşleşen kazanır
+        sonuc = list(havuz.map(lambda s: s.tani(host), TAM))
+    eslesen = next((s for s, ok in zip(TAM, sonuc) if ok), None)
     return {
         "adres": host,
         "model": " ".join(x for x in (u.get("uretici"), u.get("model")) if x),
@@ -28,5 +31,11 @@ def tani(host: str = "") -> dict:
         "surucu_ad": eslesen.AD if eslesen else "",
         "tanindi": bool(eslesen),
         "upnp": bool(u),
-        "secenekler": [{"kimlik": s.KIMLIK, "ad": s.AD, "giris": s.GIRIS_GEREKIR} for s in (*TAM, Genel)],
+        "secenekler": secenekler(),
     }
+
+
+def secenekler() -> list:
+    """Kurulum ekranındaki modem türü listesi."""
+    return [{"kimlik": s.KIMLIK, "ad": s.AD, "giris": s.GIRIS_GEREKIR, "kullanici": s.VARSAYILAN_KULLANICI,
+             "not": s.KURULUM_NOTU} for s in (*TAM, Genel)]

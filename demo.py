@@ -2,6 +2,7 @@
 
     python demo.py            full control (a supported router)
     python demo.py --temel    basic mode (any router, no password)
+    python demo.py --surucu fritzbox|openwrt|mikrotik   an experimental driver against a simulated router of that brand
 
 No modem, password or network access needed. Everything lives in a throwaway folder that is
 wiped on every start, and the panel opens on its own port (8766), so it never touches a real
@@ -66,6 +67,8 @@ def mac_uret(rnd, onek):
 
 
 TEMEL = "--temel" in sys.argv
+MARKA = sys.argv[sys.argv.index("--surucu") + 1] if "--surucu" in sys.argv else ""
+MARKA_PORT = {"fritzbox": 8771, "openwrt": 8772, "mikrotik": 8773}
 RND = random.Random(2026)
 MACLER = [mac_uret(RND, c[0]) for c in CIHAZLAR]
 
@@ -296,7 +299,8 @@ def demo_klasoru_hazirla():
         cihazlar[MACLER[i]]["guvenilir"] = True
     gece = [[(s >= 44 or s < 14) for s in range(48)] for _ in range(7)]  # 22:00–07:00 internet kapalı
     ayar = {"bildirim": False, "dil": "en", "tema": "storm", "takvimler": {MACLER[SINIRLI]: gece},
-            "surucu": "genel" if TEMEL else "tplink_cgi", "modem_adres": "192.168.1.1"}
+            "surucu": "genel" if TEMEL else MARKA or "tplink_cgi",
+            "modem_adres": "127.0.0.1" if MARKA == "fritzbox" else f"127.0.0.1:{MARKA_PORT[MARKA]}" if MARKA else "192.168.1.1"}
     (veri / "cihazlar.json").write_text(json.dumps({"cihazlar": cihazlar, "ayar": ayar}, ensure_ascii=False, indent=1),
                                         encoding="utf-8")
     return veri
@@ -413,7 +417,27 @@ def main():
     surucu.genel.Genel._tara = sahte_tarama
     servis.bu_pc_ip = lambda *a: PC_IP
     sifre_kasasi.var_mi = lambda: True
-    sifre_kasasi.oku = lambda: ("admin", "demo")
+    sifre_kasasi.oku = lambda: ("root" if MARKA == "openwrt" else "admin", "demo")
+    if MARKA:  # deneysel sürücü + o markanın sahte modemi (araclar/sahte_yonlendiriciler.py)
+        sys.path.insert(0, str(KLASOR / "araclar"))
+        import sahte_yonlendiriciler
+        import surucu.fritzbox
+        sahte_yonlendiriciler.baslat(MARKA, [{"mac": MACLER[i], "ad": c[1], "ip": c[2], "kablo": c[3] == "kablo", "bant": c[4],
+                                              "aktif": c[5]} for i, c in enumerate(CIHAZLAR)], MARKA_PORT[MARKA])
+        surucu.fritzbox.PORT = MARKA_PORT["fritzbox"]
+        for s in surucu.SURUCULER.values():
+            s.lan_onek = lambda self: "192.168.1."  # sahte modem 127.0.0.1'de, cihazlar 192.168.1.x
+    import surucu.kesif
+
+    def sahte_kesif(adres=""):
+        """Kurulum ekranı gerçek ağı değil demo modemini 'bulur'."""
+        kimlik = "genel" if TEMEL else MARKA or "tplink_cgi"
+        return {"adres": adres or ("127.0.0.1" if MARKA else "192.168.1.1"),
+                "model": {"tplink_cgi": "TP-Link VC220-G3u", "fritzbox": "AVM FRITZ!Box 7590", "openwrt": "GL.iNet GL-MT6000",
+                          "mikrotik": "MikroTik hAP ax3"}.get(kimlik, ""),
+                "surucu": kimlik, "surucu_ad": surucu.SURUCULER[kimlik].AD, "tanindi": kimlik != "genel", "upnp": True,
+                "secenekler": surucu.kesif.secenekler()}
+    surucu.kesif.tani = sahte_kesif
     bildirim.gonder = lambda *a, **k: None
     izleyici.ulasir = lambda *a, **k: True
     izleyici.KesintiIzleyici.calis = lambda self: setattr(self, "durum", "var")

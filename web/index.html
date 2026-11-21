@@ -216,10 +216,11 @@
         <p class="hata" id="kurulumHata" hidden></p>
         <form id="kurulumForm" autocomplete="off">
           <label>Modem türü<select id="kSurucu"></select></label>
+          <p class="kucuk" id="kSurucuNot" hidden></p>
           <label>Modem adresi<input id="kAdres" class="mono" spellcheck="false" placeholder="192.168.1.1"></label>
           <div id="kGiris">
             <p class="kucuk">WaveSnap, modemin yönetim şifresiyle giriş yapar. Şifre bu bilgisayarda şifreli saklanır; başka hiçbir yere gönderilmez.</p>
-            <label>Kullanıcı adı<input id="kKullanici" value="admin" spellcheck="false"></label>
+            <label>Kullanıcı adı<input id="kKullanici" value="admin" spellcheck="false" autocapitalize="off"></label>
             <label>Şifre<input id="kSifre" type="password"></label>
           </div>
           <p class="kucuk" id="kTemelNot" hidden>Temel mod modem şifresi istemez. İnternet kesintileri, hız testi ve bağlantı testi tam çalışır. Cihaz listesi ağı tarayarak bulunur: uykudaki telefonlar görünmeyebilir. Engelleme, durdurma ve hız sınırı bu modda yoktur.</p>

@@ -56,7 +56,9 @@ class Surucu:
     KIMLIK = ""                    # ayarlarda saklanan kısa ad, ör. "tplink_cgi"
     AD = ""                        # kullanıcıya görünen ad, ör. "TP-Link (VC220 türü arayüz)"
     VARSAYILAN_KULLANICI = "admin"
+    KURULUM_NOTU = ""              # kurulum ekranında modem türünün altında gösterilen kısa not
     GIRIS_GEREKIR = True           # modem şifresi ister mi
+    DENEYSEL = False               # gerçek bir cihazda henüz denenmedi (arayüz bunu söyler)
     TEK_OTURUM = True              # modem aynı anda tek yönetici oturumu kabul ediyor mu ("modemi bırak" düğmesi)
     yetenekler: frozenset = frozenset()
     DURDURMA_YUVASI = 0            # aynı anda internetini durdurabildiği en fazla cihaz (0 = sınırsız/yok)

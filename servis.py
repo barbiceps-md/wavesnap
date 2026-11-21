@@ -156,7 +156,8 @@ class Panel:
             "durdurulan": self.durdurulan or [],
             "durdur_yuva": self.surucu.DURDURMA_YUVASI,
             "surucu": {"kimlik": self.surucu.KIMLIK, "ad": self.surucu.AD, "yetenekler": sorted(self.surucu.yetenekler),
-                       "giris": self.surucu.GIRIS_GEREKIR, "tek_oturum": self.surucu.TEK_OTURUM},
+                       "giris": self.surucu.GIRIS_GEREKIR, "tek_oturum": self.surucu.TEK_OTURUM,
+                       "deneysel": self.surucu.DENEYSEL},
             "modem_adres": self.surucu.host,
             "internet": self.izleyici.durum,
             "trafik": list(self.trafik),
@@ -323,6 +324,7 @@ class Panel:
             "snr_yukleme": h.get("snr_yukleme", 0),
             "model": h.get("model", ""),
             "yazilim": h.get("yazilim", ""),
+            "uretici": h.get("uretici", ""),
         }
 
     def _oku(self, tam=False):
@@ -509,7 +511,8 @@ class Panel:
         takvimden = [mac for mac, t in (self.depo.ayar.get("takvimler") or {}).items()
                      if t and t[simdi.tm_wday][dilim] and mac not in elle]
         hepsi = elle + takvimden
-        return hepsi[:self.surucu.DURDURMA_YUVASI], len(hepsi) > self.surucu.DURDURMA_YUVASI
+        yuva = self.surucu.DURDURMA_YUVASI  # 0 = sınırsız
+        return (hepsi[:yuva], len(hepsi) > yuva) if yuva else (hepsi, False)
 
     def _takvim_uygula(self, zorla=False):
         self.takvim_zaman = time.time()
@@ -525,7 +528,7 @@ class Panel:
                 self.gecmis.olay(mac, "devam", "")
             log.info("durdurulan cihazlar: %s", istenen)
         if tasti:
-            log.warning("aynı anda 4'ten fazla cihaz durdurulmak istendi; fazlası atlandı")
+            log.warning("aynı anda %d'ten fazla cihaz durdurulmak istendi; fazlası atlandı", self.surucu.DURDURMA_YUVASI)
 
     def _durdur(self, mac, veri):
         if any(c["mac"] == mac and c.get("bu_pc") for c in self.cihazlar):
@@ -533,7 +536,8 @@ class Panel:
         if self.durdurulan is None:
             raise Reddedildi("Bu modemde interneti durdurma özelliği okunamadı.")
         elle = [m for m in self.depo.ayar.get("durdur_elle", []) if m != mac]
-        if mac not in self.durdurulan and len(set(elle) | set(self.durdurulan)) >= self.surucu.DURDURMA_YUVASI:
+        yuva = self.surucu.DURDURMA_YUVASI
+        if yuva and mac not in self.durdurulan and len(set(elle) | set(self.durdurulan)) >= yuva:
             raise Reddedildi(f"Modem aynı anda en fazla {self.surucu.DURDURMA_YUVASI} cihazın internetini durdurabiliyor.")
         self.depo.ayarla("durdur_elle", elle + [mac])
         self._takvim_uygula(zorla=True)

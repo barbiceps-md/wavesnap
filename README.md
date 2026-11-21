@@ -16,7 +16,8 @@
 WaveSnap runs on **Windows, macOS and Linux** and works in one of two modes:
 
 - **Full mode** talks to your router with its admin password, so it can pause, limit and block devices.
-  Today this works with **TP-Link routers that use the same web interface as the VC220-G3u**.
+  This is tested with **TP-Link routers that use the same web interface as the VC220-G3u**. Experimental drivers for
+  **AVM FRITZ!Box**, **OpenWrt** and **MikroTik RouterOS 7** are included but have not been tried on real devices yet.
   See [Supported routers](#supported-routers).
 - **Basic mode** works with **any router** and needs no password. It finds devices by scanning your network
   and keeps an outage and speed-test history, but it cannot change anything on the router.
@@ -80,6 +81,7 @@ On Windows, `python kisayol_kur.py` adds a desktop and Start menu shortcut. On L
 ```
 python demo.py          # full mode
 python demo.py --temel  # basic mode
+python demo.py --surucu fritzbox   # or openwrt, mikrotik: an experimental driver against a simulated router
 ```
 
 Opens WaveSnap with a simulated router and made-up devices. Every button works, nothing touches your real network,
@@ -136,7 +138,17 @@ On TP-Link routers (full mode):
 | Router | Firmware | Mode | Status |
 |---|---|---|---|
 | TP-Link VC220-G3u v2 | Türk Telekom build | Full | Tested |
+| AVM FRITZ!Box | FRITZ!OS with TR-064 (on by default) | Full: devices, pause, line info, Wi-Fi QR, logs, restart | Experimental, not tested on a real device |
+| OpenWrt | With LuCI (21.02 or newer) | Full: devices, pause, fixed IP, Wi-Fi QR, logs, restart | Experimental, not tested on a real device |
+| MikroTik | RouterOS 7 with the REST API (`www` or `www-ssl` service) | Full: devices, pause, fixed IP, logs, restart | Experimental, not tested on a real device |
 | Any router | — | Basic | Works without a password |
+
+The experimental drivers follow each maker's published interface (TR-064, ubus, REST) and are checked against
+simulated routers (`python araclar/surucu_testi.py`), but nobody has run them on real hardware yet. None of these
+three routers reports usage per device, so live speed and "who used how much" are hidden for them.
+On OpenWrt, a pause stops new connections; one that is already open, such as a playing video, can keep running
+until it reconnects.
+**If you own one, please try it and [open an issue](../../issues)** with what worked and what did not.
 
 Other TP-Link models whose admin page sends requests to `/cgi?1&5…` often use the same interface and may work in
 full mode. If you try one, please [open an issue](../../issues) with the model, hardware version and firmware

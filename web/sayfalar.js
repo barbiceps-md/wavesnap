@@ -211,7 +211,7 @@ function zamanlamaCiz() {
   const takvimler = m.takvimler || {};
   const ekle = dugme("Takvim ekle", "ana", () => takvimDuzenle(""));
   kutuBaslik(z, "İnternet zamanlaması", "Seçtiğiniz cihazların interneti, işaretlediğiniz saatlerde kendiliğinden durur, saat bitince geri gelir. Cihazlar Wi-Fi'de kalır.", ekle);
-  z.append(el("p", "bilgi-not", `Takvimi WaveSnap uygular: bilgisayar ve WaveSnap açıkken çalışır. Modem aynı anda en fazla ${S.veri.durdur_yuva || 4} cihazın internetini durdurabilir. WaveSnap'i kapatırsanız takvimin durdurduğu cihazlar serbest kalır.`));
+  z.append(el("p", "bilgi-not", !S.veri.durdur_yuva ? "Takvimi WaveSnap uygular: bilgisayar ve WaveSnap açıkken çalışır. WaveSnap'i kapatırsanız takvimin durdurduğu cihazlar serbest kalır." : `Takvimi WaveSnap uygular: bilgisayar ve WaveSnap açıkken çalışır. Modem aynı anda en fazla ${S.veri.durdur_yuva} cihazın internetini durdurabilir. WaveSnap'i kapatırsanız takvimin durdurduğu cihazlar serbest kalır.`));
   const liste = el("div", "secim-liste");
   liste.style.maxHeight = "none";
   const kayitlar = Object.entries(takvimler);

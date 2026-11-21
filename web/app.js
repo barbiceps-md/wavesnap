@@ -279,13 +279,17 @@ function ozetCiz(v, bagli) {
 
   const ag = $("#oAglar");
   if (!yetenek("misafir") && !yetenek("wifi_zaman")) {
-    yaz($("#oAglarBaslik"), "Temel mod");
-    if (ag.dataset.imza !== "temel") {
+    // Wi-Fi ayarı olmayan modem: temel mod ya da Wi-Fi bölümü henüz yazılmamış bir sürücü
+    const temel = temelMod(), deneysel = !!(v.surucu && v.surucu.deneysel), imza = temel ? "temel" : "modem" + deneysel;
+    yaz($("#oAglarBaslik"), temel ? "Temel mod" : "Modem");
+    if (ag.dataset.imza !== imza) {
       const k = el("div", "temel-kart");
-      k.append(el("p", "", "Modem şifresi olmadan çalışıyor. Cihazlar ağ taranarak bulunur; uykudaki telefonlar görünmeyebilir."),
-        dugme(v.surucu && v.surucu.giris ? "Modem bağlantısı" : "Modem bağlantısını değiştir", "", () => { S.kurulumZorla = true; S.kesif = null; ciz(S.veri); }));
+      k.append(el("p", "", temel ? "Modem şifresi olmadan çalışıyor. Cihazlar ağ taranarak bulunur; uykudaki telefonlar görünmeyebilir."
+        : deneysel ? "Bu modemin sürücüsü deneysel: henüz gerçek bir cihazda denenmedi. Bir sorun görürseniz GitHub'da bildirin."
+        : "Wi-Fi ayarları (zamanlama, misafir ağı) bu modemde henüz desteklenmiyor."),
+        dugme(temel ? "Modem bağlantısını değiştir" : "Modem bağlantısı", "", () => { S.kurulumZorla = true; S.kesif = null; ciz(S.veri); }));
       ag.replaceChildren(k);
-      ag.dataset.imza = "temel";
+      ag.dataset.imza = imza;
     }
     return;
   }
@@ -506,7 +510,7 @@ function cekmeceCiz(mac, ilk) {
   if (b.children.length !== bilgiler.length) b.replaceChildren(...bilgiler.map(([n, , mono, genis]) => { const d = el("div", "bilgi" + (genis ? " genis" : "")); d.append(el("small", "", n), el("b", mono ? "mono" : "")); return d; }));
   bilgiler.forEach(([, v], i) => yaz(b.children[i].querySelector("b"), v));
 
-  const yuvaDolu = (S.veri.durdurulan || []).length >= (S.veri.durdur_yuva || 4);
+  const yuvaDolu = !!S.veri.durdur_yuva && (S.veri.durdurulan || []).length >= S.veri.durdur_yuva;
   const islemler = [
     c.durduruldu ? ["devam", "İnterneti devam ettir", "Cihaz yeniden internete çıkabilir", "Durduruldu", false]
       : ["durdur", "İnterneti durdur", c.bu_pc ? "Bu bilgisayarın interneti durdurulamaz"
@@ -649,9 +653,14 @@ function kurulumTuruGoster() {
   $("#kGiris").hidden = !giris;
   $("#kTemelNot").hidden = giris;
   $("#kKilitNot").hidden = !giris || $("#kSurucu").value !== "tplink_cgi";
+  $("#kSurucuNot").hidden = !(o && o.not);
+  if (o && o.not) yaz($("#kSurucuNot"), o.not);
+  const kul = $("#kKullanici");
+  if (o && giris && !kul.dataset.elle) kul.value = o.kullanici;
   yaz($("#kDugme"), giris ? "Kaydet ve bağlan" : "Temel modda başla");
 }
 $("#kSurucu").onchange = kurulumTuruGoster;
+$("#kKullanici").oninput = e => { e.target.dataset.elle = "1"; };
 $("#kVazgec").onclick = () => { S.kurulumZorla = false; ciz(S.veri); };
 $("#kapat").onclick = async () => { await api("/api/kapat", {}).catch(() => {}); window.close(); };
 $("#kurulumForm").onsubmit = async e => {
@@ -713,9 +722,11 @@ async function cihazGecmisi(mac) {
   if (!kutu || S.cekmece !== mac) return;
   const toplam = g.gunluk.reduce((t, d) => t + d.indirme + d.yukleme, 0);
   const grafik = el("div", "grafik mini-grafik");
-  kutu.replaceChildren(el("b", "", `Son 30 gün · ${bayt(toplam)}`), grafik);
-  if (g.gunluk.length) cubukGrafik(grafik, g.gunluk, "gun");
-  else grafik.append(el("div", "grafik-bos", "Henüz kayıt yok"));
+  if (yetenek("sayac")) {  // modem cihaz başına trafik saymıyorsa kullanım grafiği yok, yalnız olaylar
+    kutu.replaceChildren(el("b", "", `Son 30 gün · ${bayt(toplam)}`), grafik);
+    if (g.gunluk.length) cubukGrafik(grafik, g.gunluk, "gun");
+    else grafik.append(el("div", "grafik-bos", "Henüz kayıt yok"));
+  } else kutu.replaceChildren();
   if (g.olaylar.length) {
     const ol = el("div", "olaylar");
     ol.style.maxHeight = "200px"; ol.style.marginTop = "10px";

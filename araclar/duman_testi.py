@@ -54,7 +54,8 @@ with tempfile.TemporaryDirectory() as gecici:
     if r.returncode:
         hatalar.append("şifre kasası")
 
-for ad, ek in (("tam mod", []), ("temel mod", ["--temel"])):
+for ad, ek in (("tam mod", []), ("temel mod", ["--temel"]), ("FRITZ!Box", ["--surucu", "fritzbox"]),
+               ("OpenWrt", ["--surucu", "openwrt"]), ("MikroTik", ["--surucu", "mikrotik"])):
     print(f"3. demo — {ad}")
     islem = subprocess.Popen([sys.executable, str(KOK / "demo.py"), "--pencere-yok", *ek], cwd=KOK,
                              stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True, encoding="utf-8")
@@ -70,14 +71,20 @@ for ad, ek in (("tam mod", []), ("temel mod", ["--temel"])):
             time.sleep(1)
         kontrol(bool(v and v.get("cihazlar")), f"cihaz listesi geldi ({len(v['cihazlar']) if v else 0})")
         if v and v.get("cihazlar"):
-            kontrol(v["surucu"]["kimlik"] == ("genel" if ek else "tplink_cgi"), f"sürücü {v['surucu']['kimlik']}")
+            istenen = ek[1] if ek[:1] == ["--surucu"] else "genel" if ek else "tplink_cgi"
+            kontrol(v["surucu"]["kimlik"] == istenen, f"sürücü {v['surucu']['kimlik']}")
             mac = v["cihazlar"][0]["mac"]
             r = istek("/api/islem", {"islem": "adlandir", "mac": mac, "ad": "Deneme"})
             kontrol("sonuc" in r, "adlandırma işlemi")
+            hedef = next(c for c in v["cihazlar"] if c["aktif"] and not c["bu_pc"])
             if not ek:
-                hedef = next(c for c in v["cihazlar"] if c["aktif"] and not c["bu_pc"])
                 r = istek("/api/islem", {"islem": "sinir", "mac": hedef["mac"], "mbps": 5})
                 kontrol("sonuc" in r, "hız sınırı işlemi")
+            if "durdur" in v["surucu"]["yetenekler"]:
+                r = istek("/api/islem", {"islem": "durdur", "mac": hedef["mac"]})
+                kontrol("sonuc" in r and hedef["mac"] in istek("/api/durum")["durdurulan"], "interneti durdurma")
+                r = istek("/api/islem", {"islem": "devam", "mac": hedef["mac"]})
+                kontrol("sonuc" in r and hedef["mac"] not in istek("/api/durum")["durdurulan"], "devam ettirme")
         istek("/api/kapat", {})
         islem.wait(timeout=20)
         kontrol(True, "düzgün kapandı")
