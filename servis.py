@@ -274,7 +274,10 @@ class Panel:
                 raise ModemMesgul()
             self.zorla = False
             if self.surucu.GIRIS_GEREKIR:
-                self.surucu.giris(*sifre_kasasi.oku())
+                kimlik = sifre_kasasi.oku()
+                if not kimlik:  # ilk kurulumda arayüz şifre girilmeden modem ayarını sorabilir
+                    raise Reddedildi("Önce modem bağlantısını kurun.")
+                self.surucu.giris(*kimlik)
                 ISARET.parent.mkdir(parents=True, exist_ok=True)
                 ISARET.touch()
             else:

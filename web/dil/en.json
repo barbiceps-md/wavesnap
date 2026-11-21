@@ -347,6 +347,7 @@
  "Modem şifresi değişirse.": "If the modem password changes.",
  "Aç": "Open",
  "WaveSnap'i tamamen kapat": "Quit WaveSnap completely",
+ "Önce modem bağlantısını kurun.": "Set up the router connection first.",
  "Arka planda çalışmayı da durdurur; bildirim gelmez. Simgeyle yeniden açılır.": "Also stops the background service, so no notifications. Reopen it with the icon.",
  "Kapat": "Quit",
  "Modeme bağlanalım": "Let's connect to your modem",
